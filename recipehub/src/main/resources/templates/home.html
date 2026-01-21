@@ -1,0 +1,165 @@
+<!-- templates/home.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <title>RecipeHub — главная</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<header>
+    <nav>
+        <a th:href="@{/}">Главная</a>
+        <a th:href="@{/recipes}">Все рецепты</a>
+        <a th:href="@{/recipes/add}"
+           sec:authorize="isAuthenticated()">Добавить рецепт</a>
+        <a th:href="@{/favorites}"
+           sec:authorize="isAuthenticated()">Избранное</a>
+
+        <!-- Гость -->
+        <span sec:authorize="!isAuthenticated()">
+            <a th:href="@{/auth/login}">Вход</a>
+            <span>·</span>
+            <a th:href="@{/auth/register}">Регистрация</a>
+        </span>
+
+        <!-- Залогиненный -->
+        <span sec:authorize="isAuthenticated()">
+            <span>Залогинен как: <span sec:authentication="name"></span></span>
+            <form th:action="@{/logout}" method="post" style="display:inline">
+                <button type="submit" class="secondary">Выйти</button>
+            </form>
+        </span>
+    </nav>
+</header>
+
+<main>
+
+    <!-- ПОИСК -->
+    <section>
+        <h1>Найти рецепт</h1>
+        <form th:action="@{/recipes}" method="get">
+            <label>
+                Что приготовить:
+                <input type="text" name="queryText" placeholder="Например, паста, борщ...">
+            </label>
+
+            <label>
+                Категория:
+                <select name="categoryId">
+                    <option value="">-- любая --</option>
+                    <option th:each="cat : ${view.categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.name}"></option>
+                </select>
+            </label>
+
+            <label>
+                Макс. время (мин):
+                <input type="number" name="maxCookingTimeMinutes" min="1" placeholder="30">
+            </label>
+
+            <label>
+                Сложность:
+                <select name="difficulty">
+                    <option value="">-- любая --</option>
+                    <option value="EASY">Легко</option>
+                    <option value="MEDIUM">Средне</option>
+                    <option value="HARD">Сложно</option>
+                </select>
+            </label>
+
+            <button type="submit">Найти</button>
+        </form>
+    </section>
+
+    <!-- ТОП-3 ПО РЕЙТИНГУ -->
+    <section>
+        <h2>Топ рецептов</h2>
+
+        <div th:if="${#lists.isEmpty(view.popularRecipes)}"
+             class="empty-state">
+            Пока нет популярных рецептов — оцените пару блюд 😊
+        </div>
+
+        <div th:if="${!#lists.isEmpty(view.popularRecipes)}">
+            <article th:each="r, iter : ${view.popularRecipes}"
+                     class="recipe-list-item">
+
+                <!-- Заголовок с Топ 1 / Топ 2 / Топ 3 -->
+                <h3>
+                    <span th:text="|Топ ${iter.index + 1}|">Топ 1</span>
+                    &nbsp;—&nbsp;
+                    <a th:href="@{/recipes/{id}(id=${r.id})}"
+                       th:text="${r.title}"
+                       class="recipe-title">Название</a>
+                </h3>
+
+                <!-- Рейтинг -->
+                <p>
+                    <span th:if="${r.averageRating != null}">
+                        Рейтинг:
+                        <strong th:text="${#numbers.formatDecimal(r.averageRating, 1, 1)}">
+                            0.0
+                        </strong>
+                    </span>
+                    <span th:if="${r.averageRating == null}">
+                        Рейтинг пока не назначен
+                    </span>
+                </p>
+
+                <!-- Метаданные -->
+                <div class="recipe-meta">
+                    <span th:text="${r.cookingTimeMinutes}">0</span> мин
+                    <!-- если у карточки есть сложность -->
+                    <span th:if="${r.difficulty != null}">
+                        , <span th:text="${r.difficulty}">DIFF</span>
+                    </span>
+                </div>
+
+                <!-- Краткое описание -->
+                <div class="recipe-description"
+                     th:text="${r.shortDescription}">
+                    Краткое описание
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- НОВЫЕ РЕЦЕПТЫ -->
+    <section>
+        <h2>Новые рецепты</h2>
+
+        <div th:if="${#lists.isEmpty(view.latestRecipes)}"
+             class="empty-state">
+            Пока нет рецептов.
+        </div>
+
+        <ul th:if="${!#lists.isEmpty(view.latestRecipes)}">
+            <li th:each="r : ${view.latestRecipes}" class="recipe-list-item">
+                <a th:href="@{/recipes/{id}(id=${r.id})}"
+                   th:text="${r.title}"
+                   class="recipe-title">Название</a>
+
+                <div class="recipe-meta">
+                    <span th:text="${r.cookingTimeMinutes}">0</span> мин
+                    <span th:if="${r.difficulty != null}">
+                        , <span th:text="${r.difficulty}">DIFF</span>
+                    </span>
+                </div>
+
+                <div class="recipe-description"
+                     th:text="${r.shortDescription}">
+                    Краткое описание
+                </div>
+            </li>
+        </ul>
+    </section>
+
+</main>
+
+</body>
+</html>

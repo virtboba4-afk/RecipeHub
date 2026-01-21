@@ -1,0 +1,89 @@
+<!-- templates/recipes/list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <title>RecipeHub — рецепты</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Главная</a> |
+        <a th:href="@{/recipes}">Все рецепты</a> |
+        <a th:href="@{/recipes/add}"
+           sec:authorize="hasAnyRole('ADMIN','MODERATOR')">Добавить рецепт</a> |
+        <a th:href="@{/favorites}"
+           sec:authorize="isAuthenticated()">Избранное</a>
+
+        <span sec:authorize="!isAuthenticated()">
+            | <a th:href="@{/auth/login}">Вход</a>
+            | <a th:href="@{/auth/register}">Регистрация</a>
+        </span>
+
+        <span sec:authorize="isAuthenticated()">
+            | Залогинен как: <span sec:authentication="name"></span>
+
+        </span>
+    </nav>
+</header>
+
+<section>
+    <h2>Фильтр</h2>
+    <form th:action="@{/recipes}" method="get">
+        <label>
+            Поиск:
+            <input type="text" name="queryText"
+                   th:value="${view.filter != null ? view.filter.queryText : ''}">
+        </label>
+        <label>
+            Категория:
+            <select name="categoryId">
+                <option value="">-- любая --</option>
+                <option th:each="cat : ${view.categories}"
+                        th:value="${cat.id}"
+                        th:selected="${view.filter != null and view.filter.categoryId == cat.id}"
+                        th:text="${cat.name}">
+                </option>
+            </select>
+        </label>
+        <label>
+            Макс. время:
+            <input type="number" name="maxCookingTimeMinutes"
+                   th:value="${view.filter != null ? view.filter.maxCookingTimeMinutes : ''}">
+        </label>
+        <label>
+            Сложность:
+            <select name="difficulty">
+                <option value="">-- любая --</option>
+                <option value="EASY"
+                        th:selected="${view.filter != null and view.filter.difficulty == 'EASY'}">Легко</option>
+                <option value="MEDIUM"
+                        th:selected="${view.filter != null and view.filter.difficulty == 'MEDIUM'}">Средне</option>
+                <option value="HARD"
+                        th:selected="${view.filter != null and view.filter.difficulty == 'HARD'}">Сложно</option>
+            </select>
+        </label>
+        <button type="submit">Применить</button>
+    </form>
+</section>
+
+<section>
+    <h2>Результаты</h2>
+    <div th:if="${#lists.isEmpty(view.recipes)}">Ничего не найдено.</div>
+    <ul th:if="${!#lists.isEmpty(view.recipes)}">
+        <li th:each="r : ${view.recipes}">
+            <a th:href="@{/recipes/{id}(id=${r.id})}"
+               th:text="${r.title}">Название</a>
+            <span> — </span>
+            <span th:text="${r.shortDescription}">Описание</span><br>
+            <small>
+                Время: <span th:text="${r.cookingTimeMinutes}">0</span> мин,
+                Сложность: <span th:text="${r.difficulty}">DIFF</span>
+            </small>
+        </li>
+    </ul>
+</section>
+
+</body>
+</html>

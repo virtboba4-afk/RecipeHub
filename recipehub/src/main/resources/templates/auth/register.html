@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>RecipeHub — регистрация</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<section class="form-card">
+    <h1>Регистрация</h1>
+
+    <form th:action="@{/auth/register}" th:object="${form}" method="post">
+
+        <label>
+            Имя:
+            <input type="text" th:field="*{fullName}">
+        </label>
+
+        <label>
+            Email:
+            <input type="email" th:field="*{email}">
+        </label>
+
+        <label>
+            Пароль:
+            <input type="password" th:field="*{password}">
+        </label>
+
+        <label>
+            Подтверждение пароля:
+            <input type="password" th:field="*{confirmPassword}">
+        </label>
+
+        <button type="submit">Зарегистрироваться</button>
+    </form>
+
+    <p style="text-align:center; margin-top:12px;">
+        Уже есть аккаунт?
+        <a th:href="@{/auth/login}">Войти</a>
+    </p>
+</section>
+
+</body>
+</html>
