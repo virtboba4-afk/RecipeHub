@@ -1,0 +1,17 @@
+<!-- templates/error/custom-error.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${errorTitle}">Ошибка</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1 th:text="${errorTitle}">Ошибка</h1>
+<p>
+    Код: <strong th:text="${errorCode}">500</strong>
+</p>
+<p th:text="${errorMessage}">Сообщение об ошибке</p>
+
+<p><a th:href="@{/}">На главную</a></p>
+</body>
+</html>

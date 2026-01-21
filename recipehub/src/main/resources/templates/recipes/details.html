@@ -1,0 +1,167 @@
+<!-- templates/recipes/details.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'RecipeHub — ' + ${view.title}">RecipeHub</title>
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header>
+    <nav>
+        <a th:href="@{/}">Главная</a> |
+        <a th:href="@{/recipes}">Все рецепты</a> |
+        <a th:href="@{/recipes/add}"
+           sec:authorize="isAuthenticated()">Добавить рецепт</a> |
+        <a th:href="@{/favorites}"
+           sec:authorize="isAuthenticated()">Избранное</a>
+
+        <span sec:authorize="!isAuthenticated()">
+            | <a th:href="@{/auth/login}">Вход</a>
+            | <a th:href="@{/auth/register}">Регистрация</a>
+        </span>
+
+        <span sec:authorize="isAuthenticated()">
+            | Залогинен как: <span sec:authentication="name"></span>
+            | <a th:href="@{/logout}">Выйти</a>
+        </span>
+    </nav>
+</header>
+
+<main>
+
+    <section>
+        <h1 th:text="${view.title}">Название рецепта</h1>
+
+        <p th:if="${view.shortDescription != null and !#strings.isEmpty(view.shortDescription)}">
+            <em th:text="${view.shortDescription}">Краткое описание рецепта</em>
+        </p>
+
+        <p>
+            Автор:
+            <strong th:text="${view.authorName}">Автор</strong><br>
+
+            Время приготовления:
+            <span th:text="${view.cookingTimeMinutes}">0</span> мин<br>
+
+            Сложность:
+            <span th:text="${view.difficulty}">DIFF</span><br>
+
+            Категории:
+            <span th:if="${#lists.isEmpty(view.categoryNames)}">нет</span>
+            <span th:if="${!#lists.isEmpty(view.categoryNames)}">
+                <span th:each="c, iter : ${view.categoryNames}">
+                    <span th:text="${c}">Категория</span><span th:if="${!iter.last}">, </span>
+                </span>
+            </span>
+        </p>
+
+        <p th:text="${view.description}">Полное описание рецепта</p>
+    </section>
+
+    <!-- Ингредиенты -->
+    <section>
+        <h2>Ингредиенты</h2>
+        <ul>
+            <li th:each="ing : ${view.ingredients}">
+                <span th:text="${ing.name}">Название</span> —
+                <span th:text="${ing.amount}">0</span>
+                <span th:text="${ing.unit}">шт</span>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Шаги -->
+    <section>
+        <h2>Шаги</h2>
+        <ol>
+            <li th:each="s : ${view.steps}">
+                <span th:text="${s.text}">Текст шага</span>
+            </li>
+        </ol>
+    </section>
+
+    <!-- Избранное -->
+    <section sec:authorize="isAuthenticated()">
+        <h2>Избранное</h2>
+
+        <div th:if="${view.favorite}">
+            <form th:action="@{/favorites/remove/{id}(id=${view.id})}" method="post">
+                <button type="submit">Убрать из избранного</button>
+            </form>
+        </div>
+
+        <div th:if="${!view.favorite}">
+            <form th:action="@{/favorites/add/{id}(id=${view.id})}" method="post">
+                <button type="submit">Добавить в избранное</button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Оценка -->
+    <section sec:authorize="isAuthenticated()">
+        <h2>Оценка</h2>
+
+        <p th:if="${view.averageRating != null}">
+            Средняя оценка:
+            <strong th:text="${#numbers.formatDecimal(view.averageRating, 1, 1)}">0.0</strong>
+        </p>
+
+        <!-- Важно: в контроллере для деталей рецепта должен быть model.addAttribute("rating", new RatingDto()); -->
+        <form th:action="@{/recipes/{id}/rating(id=${view.id})}"
+              th:object="${rating}"
+              method="post">
+            <label>
+                Оценка (1–5):
+                <input type="number" th:field="*{rating}" min="1" max="5">
+            </label>
+
+            <button type="submit">Отправить оценку</button>
+        </form>
+    </section>
+
+    <!-- Управление (только админ) -->
+    <section sec:authorize="hasRole('ADMIN')">
+        <h2>Управление</h2>
+        <form th:action="@{/recipes/delete/{id}(id=${view.id})}"
+              method="get"
+              onsubmit="return confirm('Точно удалить рецепт?');">
+            <button type="submit">Удалить рецепт</button>
+        </form>
+    </section>
+    <section>
+        <h2>Комментарии</h2>
+
+        <div th:if="${#lists.isEmpty(view.comments)}">
+            Пока нет комментариев.
+        </div>
+
+        <div th:if="${!#lists.isEmpty(view.comments)}">
+            <div th:each="c : ${view.comments}">
+                <p>
+                    <strong th:text="${c.authorName}">Автор</strong>
+                    <span th:text="${#temporals.format(c.createdAt, 'dd.MM.yyyy HH:mm')}">
+                    Дата
+                </span><br>
+                    <span th:text="${c.text}">Текст комментария</span>
+                </p>
+                <hr>
+            </div>
+        </div>
+    </section>
+    <section sec:authorize="isAuthenticated()">
+        <h3>Оставить комментарий</h3>
+
+        <form th:action="@{/recipes/{id}/comment(id=${view.id})}"
+              th:object="${comment}"
+              method="post">
+            <textarea th:field="*{text}" placeholder="Ваш комментарий"></textarea><br>
+            <button type="submit">Отправить комментарий</button>
+        </form>
+    </section>
+
+</main>
+
+</body>
+</html>

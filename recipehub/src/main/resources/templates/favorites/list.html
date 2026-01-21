@@ -1,0 +1,33 @@
+<!-- templates/favorites/list.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Избранные рецепты — RecipeHub</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+<header>
+    <h1>Избранные рецепты</h1>
+    <nav>
+        <a th:href="@{/}">Главная</a> |
+        <a th:href="@{/recipes}">Все рецепты</a>
+    </nav>
+</header>
+
+<section>
+    <div th:if="${#lists.isEmpty(view.favoriteRecipes)}">
+        У вас пока нет избранных рецептов.
+    </div>
+
+    <ul th:if="${!#lists.isEmpty(view.favoriteRecipes)}">
+        <li th:each="r : ${view.favoriteRecipes}">
+            <a th:href="@{/recipes/{id}(id=${r.id})}"
+               th:text="${r.title}">Название</a>
+            — <span th:text="${r.shortDescription}">Описание</span>
+        </li>
+    </ul>
+</section>
+
+</body>
+</html>

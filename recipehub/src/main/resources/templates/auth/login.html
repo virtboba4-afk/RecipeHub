@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>RecipeHub — вход в аккаунт</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+
+<section class="form-card">
+    <h1>Вход</h1>
+
+    <form th:action="@{/auth/login}" method="post">
+
+        <label>
+            Email:
+            <input type="email" name="email">
+        </label>
+
+        <label>
+            Пароль:
+            <input type="password" name="password">
+        </label>
+
+        <button type="submit">Войти</button>
+    </form>
+
+    <p style="text-align:center; margin-top:12px;">
+        Нет аккаунта?
+        <a th:href="@{/auth/register}">Создать</a>
+    </p>
+</section>
+
+</body>
+</html>
